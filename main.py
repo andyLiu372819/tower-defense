@@ -4,6 +4,7 @@ import objective
 import const
 import imports
 import pygame as pg
+import sys
 
 
 pg.init()
@@ -52,7 +53,17 @@ def select_panel():
             selected_tower_type = tower_type
             print(f"Selected tower type: {selected_tower_type}")
         
-        y_offset += 70
+        y_offset += 50
+
+    
+    quit_button=  pg.Rect(10, 700, const.PANEL_HEIGHT - 20, 50)
+    pg.draw.rect(screen, const.WHITE, quit_button)
+
+    tt = font.render(f"QUIT", True, const.RED)
+    screen.blit(tt, (20, 715))
+    
+    if pg.mouse.get_pressed()[0] and quit_button.collidepoint(pg.mouse.get_pos()):
+        pg.quit()
 
 
 while running:
@@ -81,19 +92,19 @@ while running:
         spawn_rate == const.SPAWN_RATE
 
 
-    for enemy in enemies[:]:
-        enemy.move()
-        enemy.draw(screen)
-        if enemy.x < const.PANEL_HEIGHT:
-            enemies.remove(enemy)
-        elif enemy.health <= 0:
-            enemies.remove(enemy)
+    for i in enemies[:]:
+        i.move()
+        i.draw(screen)
+        if i.x < const.PANEL_HEIGHT:
+            enemies.remove(i)
+        elif i.health <= 0:
+            enemies.remove(i)
             money += 1  # Reward for defeating enemy
 
     # Update and draw towers
-    for tower in towers:
-        tower.attack(enemies)
-        tower.draw(screen)
+    for i in towers:
+        i.attack(enemies)
+        i.draw(screen)
 
     select_panel()
 

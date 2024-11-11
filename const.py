@@ -27,6 +27,14 @@ TOWER_TYPE = {
     "Crossbow": {"damage": 60, "rate": 4, "cost": 6, "color": WHITE, "range": 100}
 }
 
+
+TOWER_ID = {
+    1: "Guard",
+    2: "Archer",
+    3: "Crossbow"
+}
+
+
 FPS = 60
 
 WIDTH, HEIGHT = 1200, 800
