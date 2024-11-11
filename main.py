@@ -51,7 +51,6 @@ def select_panel():
         if pg.mouse.get_pressed()[0] and button_rect.collidepoint(pg.mouse.get_pos()):
             global selected_tower_type
             selected_tower_type = tower_type
-            print(f"Selected tower type: {selected_tower_type}")
         
         y_offset += 50
 
@@ -80,7 +79,6 @@ while running:
                     try:
                         towers.append(tower.Tower(selected_tower_type, x, y))  # Instantiate tower
                         money -= tower_info["cost"]
-                        print(f"Placed {selected_tower_type} tower at ({x}, {y})")  # Debugging line
                         selected_tower_type = None
                     except Exception as e:
                         print(f"Error while creating tower: {e}")  # Error message for troubleshooting
@@ -103,7 +101,7 @@ while running:
 
     # Update and draw towers
     for i in towers:
-        i.attack(enemies)
+        i.attack(enemies, screen)
         i.draw(screen)
 
     select_panel()
@@ -111,8 +109,5 @@ while running:
     pg.display.flip()
     clock.tick(fps)
 
+
 pg.quit()
-
-
-
-
