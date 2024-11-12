@@ -1,11 +1,9 @@
 import enemy
 import tower
-import objective
 import const
 import imports
 import pygame as pg
 import sys
-import objective
 
 
 pg.init()
@@ -16,13 +14,15 @@ pg.display.set_caption("Tower Defense")
 
 fps = const.FPS
 spawn_rate = const.SPAWN_RATE
+spawn_timer = spawn_rate
 
 enemies = []
 towers = []
 
 clock = pg.time.Clock()
 running = True
-money = 10
+up_timer = const.INCREASE_DIFF_RATE
+money = 20
 
 selected_tower_type = None
 
@@ -71,6 +71,15 @@ def select_panel():
         pg.quit()
 
 
+def restart():
+    global enemies, towers, spawn_timer, spawn_rate, money
+    enemies = []
+    towers = []
+    spawn_rate = const.SPAWN_RATE
+    spawn_timer = spawn_rate
+    money = 20
+
+
 def paused():
     p = True
     font = pg.font.SysFont(None, 120)
@@ -87,10 +96,58 @@ def paused():
 
         cont_button = pg.Rect(250, 600, 100, 50)
         quit_button = pg.Rect(850, 600, 100, 50)
+        restart_button = pg.Rect(600, 600, 100, 50)
+        pg.draw.rect(screen, const.WHITE, cont_button)
+        pg.draw.rect(screen, const.WHITE, quit_button)
+        pg.draw.rect(screen, const.WHITE, restart_button)
+
+        cont_text = new_font.render("CONTINUE", True, const.GREEN)
+        quit_text = new_font.render("QUIT", True, const.RED)
+        restart_text = new_font.render("RESTART", True, const.BLUE)
+
+        screen.blit(cont_text, (260, 610))
+        screen.blit(quit_text, (860, 610))
+        screen.blit(restart_text, (610, 610))
+
+        if pg.mouse.get_pressed()[0]:
+            if quit_button.collidepoint(pg.mouse.get_pos()):
+                pg.quit()
+            elif cont_button.collidepoint(pg.mouse.get_pos()):
+                p = False
+            elif restart_button.collidepoint(pg.mouse.get_pos()):
+                restart()
+                p = False
+                
+
+        pg.display.update()
+
+def check_defeat():
+    global enemies
+    for i in enemies:
+        if i.x < const.PANEL_WIDTH:
+            print("lost")
+            return True
+    return False
+
+def defeated():
+    defeat = check_defeat()
+    font = pg.font.SysFont(None, 96)
+    while defeat:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+
+        text = font.render(f"YOU LOST", True, const.RED)
+        screen.blit(text, (450, 350))
+
+        new_font = pg.font.SysFont(None, 24)
+
+        cont_button = pg.Rect(250, 600, 100, 50)
+        quit_button = pg.Rect(850, 600, 100, 50)
         pg.draw.rect(screen, const.WHITE, cont_button)
         pg.draw.rect(screen, const.WHITE, quit_button)
 
-        cont_text = new_font.render("CONTINUE", True, const.GREEN)
+        cont_text = new_font.render("RESTART", True, const.GREEN)
         quit_text = new_font.render("QUIT", True, const.RED)
 
         screen.blit(cont_text, (260, 610))
@@ -100,10 +157,32 @@ def paused():
             if quit_button.collidepoint(pg.mouse.get_pos()):
                 pg.quit()
             elif cont_button.collidepoint(pg.mouse.get_pos()):
-                p = False
+                restart()
+                defeat = False
 
         pg.display.update()
 
+def spawn():
+    global spawn_rate, enemies, spawn_timer
+    if spawn_timer <= 0:
+        type = imports.random.randint(1, 100)
+        if type < 70:
+            enemies.append(enemy.Enemy(const.ENEMY_ID[1]))
+        elif type < 90:
+            enemies.append(enemy.Enemy(const.ENEMY_ID[2]))
+        else:
+            enemies.append(enemy.Enemy(const.ENEMY_ID[3]))
+        spawn_timer = spawn_rate
+    else:
+        spawn_timer = spawn_timer - 1
+
+def increase():
+    global up_timer, spawn_rate
+    if up_timer == 0:
+        spawn_rate = spawn_rate * 0.9
+        up_timer = const.INCREASE_DIFF_RATE
+    else:
+        up_timer -= 1
 
 while running:
     screen.fill(const.BLACK)
@@ -126,35 +205,25 @@ while running:
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_p:
                 paused()
-
     
-    if spawn_rate == 0:
-        type = imports.random.randint(1, 100)
-        if type < 70:
-            enemies.append(enemy.Enemy(const.ENEMY_ID[1]))
-        elif type < 90:
-            enemies.append(enemy.Enemy(const.ENEMY_ID[2]))
-        else:
-            enemies.append(enemy.Enemy(const.ENEMY_ID[3]))
-        spawn_rate == const.SPAWN_RATE
+    spawn()
+    defeated()
+    increase()
 
-    else:
-        spawn_rate -= 1
-
-
-    for i in enemies[:]:
+    for i in enemies:
         i.move()
+        i.attack(towers, screen)
         i.draw(screen)
-        if i.x < const.PANEL_WIDTH:
+        if i.health <= 0:
             enemies.remove(i)
-        elif i.health <= 0:
-            enemies.remove(i)
-            money += 1  # Reward for defeating enemy
+            money += i.money  # Reward for defeating enemy
 
     # Update and draw towers
     for i in towers:
         i.attack(enemies, screen)
         i.draw(screen)
+        if i.health <= 0:
+            towers.remove(i)
 
     select_panel()
 

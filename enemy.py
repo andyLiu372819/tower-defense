@@ -15,7 +15,8 @@ class Enemy:
         self.range = et[type]["range"]
         self.damage = et[type]["damage"]
         self.rate = et[type]["rate"]
-        self.speed = 1
+        self.money = et[type]["money"]
+        self.speed = 2
         self.timer = 0
 
     def move(self):
@@ -34,23 +35,15 @@ class Enemy:
     
     def attack(self, towers, screen):
         if self.timer == 0:
-            attacked, index = False, 0
-            while not attacked:
-                tower = towers[index]
+            for tower in towers:
                 dist = imports.math.hypot(self.x - tower.x, self.y - tower.y)
 
-                if dist <= self.range:
+                if dist <= self.range and self.timer == 0:
                     tower.health -= self.damage
-                    self.speed = 0
                     
                     imports.pygame.draw.line(screen, self.colour, (self.x, self.y), (tower.x, tower.y), 2)
-
-                    attacked = True
                     self.timer = self.rate
-            
-            if not attacked:
-                self.speed = 1
-            
-            
+                    break
+
         else:
             self.timer -= 1
