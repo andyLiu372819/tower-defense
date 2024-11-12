@@ -7,13 +7,12 @@ class Tower:
     def __init__(self, type, x, y):
         print(f"Initializing tower of type: {type}")
         self.type = type
-        if self.type in ["Archer", "Crossbow"]:
-            self.ranged = True
         self.damage = tt[type]["damage"]
         self.rate = tt[type]["rate"]
         self.cost = tt[type]["cost"]
         self.color = tt[type]["color"]
         self.range = tt[type]["range"]
+        self.health = tt[type]["health"]
         self.x = x
         self.y = y
         self.timer = 0
@@ -26,8 +25,7 @@ class Tower:
                     enemy.health -= self.damage
                     self.timer = self.rate
 
-                    if self.ranged:
-                        imports.pygame.draw.line(screen, self.color, (self.x, self.y), (enemy.x, enemy.y), 2)
+                    imports.pygame.draw.line(screen, self.color, (self.x, self.y), (enemy.x, enemy.y), 2)
                     break
         else:
             self.timer -= 1
